@@ -26,5 +26,7 @@ public class CategoryController {
     }
 
     @PutMapping("/update")
-
+    public ResponseEntity<?> update(@RequestHeader String token, @RequestBody CategoryResponse categoryResponse){
+        return categoryService.update(token,categoryResponse);
+    }
 }

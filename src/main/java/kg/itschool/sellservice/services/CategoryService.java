@@ -9,4 +9,6 @@ public interface CategoryService {
     CategoryResponse findByName(String category);
 
     ResponseEntity<?> getAll(String token, CategoryResponse categoryResponse);
+
+    ResponseEntity<?> update(String token, CategoryResponse categoryResponse);
 }

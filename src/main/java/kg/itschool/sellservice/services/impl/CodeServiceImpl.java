@@ -2,6 +2,9 @@ package kg.itschool.sellservice.services.impl;
 
 import io.jsonwebtoken.*;
 import kg.itschool.sellservice.dao.CodeRepo;
+import kg.itschool.sellservice.exeptions.IncorrectData;
+import kg.itschool.sellservice.exeptions.NotFound;
+import kg.itschool.sellservice.exeptions.TimeExpired;
 import kg.itschool.sellservice.mappers.UserMapper;
 import kg.itschool.sellservice.models.dtos.user.UserCreateDTO;
 import kg.itschool.sellservice.models.dtos.user.UserResponseDTO;
@@ -44,11 +47,11 @@ public class CodeServiceImpl implements CodeService {
     public ResponseEntity<?> sendCode(UserCreateDTO userCreateDTO) {
         String loginValidate="(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
         if (!Pattern.matches(loginValidate,userCreateDTO.getLogin())){
-            return new ResponseEntity<>("вы ввели некоректный email",HttpStatus.CONFLICT);
+            throw new IncorrectData("Ошибка","вы ввели некоректный email");
         }
         UserResponseDTO userResponseDTO =userService.findByLogin(userCreateDTO.getLogin());
         if (Objects.isNull(userResponseDTO)){
-            return new ResponseEntity<>("такого пользователя нет ", HttpStatus.CONFLICT);
+            throw new NotFound("Ошибка","Такого пользователя нет");
         }
         boolean verification= userBlockDateChecking(userResponseDTO);
         if (verification){
@@ -77,11 +80,11 @@ public class CodeServiceImpl implements CodeService {
         UserResponseDTO userResponseDTO= userService.findByLogin(login);
         String loginValidate="(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
         if (!Pattern.matches(loginValidate,login)){
-            return new ResponseEntity<>("вы ввели некоректный email",HttpStatus.CONFLICT);
+            throw new IncorrectData("Ошибка","вы ввели некоректный email");
         }
 
         if (Objects.isNull(userResponseDTO)){
-            return new ResponseEntity<>("такого пользователя нет ", HttpStatus.CONFLICT);
+            throw new NotFound("Ошибка","Такого пользователя нет");
         }
 
         boolean verification= userBlockDateChecking(userResponseDTO);
@@ -91,7 +94,7 @@ public class CodeServiceImpl implements CodeService {
 
         Code codeChecking =codeRepo.findByUserAndCodeStatus(UserMapper.INSTANCE.userResponseToUser(userResponseDTO),CodeStatus.NEW);
         if (LocalDateTime.now().isAfter(codeChecking.getEndDate())){
-            return new ResponseEntity<>("Время действия кода истек! Получите код повторно",HttpStatus.CONFLICT);
+            throw new TimeExpired("Ошибка","Время действия кода истек! Получите код повторно");
         }
 
         if (!BCrypt.checkpw(code, codeChecking.getCode())){
@@ -103,7 +106,7 @@ public class CodeServiceImpl implements CodeService {
                 codeChecking.setCodeStatus(CodeStatus.FAILED);
                 codeRepo.saveAndFlush(codeChecking);
             }
-            return new ResponseEntity<>("Код не совподает",HttpStatus.ACCEPTED);
+            throw new IncorrectData("Ошибка","Код не совподает");
         }
 
         requestService.saveRequest(codeChecking, true);

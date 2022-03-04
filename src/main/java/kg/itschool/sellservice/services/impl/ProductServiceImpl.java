@@ -1,6 +1,8 @@
 package kg.itschool.sellservice.services.impl;
 
 import kg.itschool.sellservice.dao.ProductRepo;
+import kg.itschool.sellservice.exeptions.AlreadyExists;
+import kg.itschool.sellservice.exeptions.NotFound;
 import kg.itschool.sellservice.mappers.ProductMapper;
 import kg.itschool.sellservice.models.dtos.category.CategoryResponse;
 import kg.itschool.sellservice.models.dtos.product.ProductCreate;
@@ -36,11 +38,11 @@ public class ProductServiceImpl implements ProductService {
         }
         CategoryResponse categoryResponse=categoryService.findByName(productCreate.getCategory().getName());
         if (Objects.isNull(categoryResponse)){
-            return new ResponseEntity<>("Такой категории нет",HttpStatus.CONFLICT);
+            throw new NotFound("Ошибка","Такой категории нет");
         }
         Product product = productRepo.findByName(productCreate.getName());
         if (Objects.nonNull(product)){
-            return new ResponseEntity<>("Такое продукт уже есть",HttpStatus.CONFLICT);
+            throw new AlreadyExists("Ошибка","Такой продукт уже есть");
         }
         int barcode = new Random().nextInt(999999) + 100000;
         product = ProductMapper.INSTANCE.productCreateToProduct(productCreate);
