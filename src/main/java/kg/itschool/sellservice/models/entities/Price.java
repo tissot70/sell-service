@@ -18,6 +18,7 @@ import javax.persistence.Table;
 @Table(name = "prices")
 public class Price extends BaseDate {
     double price;
+    boolean active;
     @ManyToOne
     @JoinColumn(name = "products_id")
     Product product;

@@ -1,7 +1,7 @@
 package kg.itschool.sellservice.services.impl;
 
 import kg.itschool.sellservice.dao.CategoryRepo;
-import kg.itschool.sellservice.exeptions.AlreadyExists;
+import kg.itschool.sellservice.exeptions.AlreadyExistsException;
 import kg.itschool.sellservice.mappers.CategoryMapper;
 import kg.itschool.sellservice.models.dtos.category.CategoryResponse;
 import kg.itschool.sellservice.models.entities.Category;
@@ -31,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         boolean exist = categoryRepo.existsByName(categoryResponse.getName());
         if (exist){
-            throw new AlreadyExists("Ошибка","Такое название уже есть");
+            throw new AlreadyExistsException("Ошибка","Такое название уже есть");
         }
         Category category = CategoryMapper.INSTANCE.categoryResponseToCategory(categoryResponse);
         categoryRepo.saveAndFlush(category);
@@ -44,13 +44,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ResponseEntity<?> getAll(String token, CategoryResponse categoryResponse) {
+    public ResponseEntity<?> getAll(String token) {
         ResponseEntity<?> responseEntity =codeService.verifyToken(token);
         if (!responseEntity.getStatusCode().equals(HttpStatus.OK)){
             return responseEntity;
         }
-        List<CategoryResponse> categoryResponses = categoryRepo.findAllByName(categoryResponse.getName());
-        return new ResponseEntity<>(categoryResponses,HttpStatus.OK);
+        List<Category> categories = categoryRepo.findAll();
+        return new ResponseEntity<>(categories,HttpStatus.OK);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         boolean exist = categoryRepo.existsByName(categoryResponse.getName());
         if (exist){
-            throw new AlreadyExists("Ошибка","Такое название уже есть");
+            throw new AlreadyExistsException("Ошибка","Такое название уже есть");
         }
         Category category = CategoryMapper.INSTANCE.categoryResponseToCategory(categoryResponse);
         categoryRepo.saveAndFlush(category);

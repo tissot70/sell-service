@@ -21,8 +21,8 @@ public class CategoryController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<?> getAll(@RequestHeader String token, @RequestBody CategoryResponse categoryResponse){
-        return  categoryService.getAll(token,categoryResponse);
+    public ResponseEntity<?> getAll(@RequestHeader String token){
+        return  categoryService.getAll(token);
     }
 
     @PutMapping("/update")

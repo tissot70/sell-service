@@ -5,11 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NotFound extends RuntimeException{
+public class AlreadyExistsException extends RuntimeException {
     String title;
 
-    public NotFound(String message, String title) {
+    public AlreadyExistsException(String message, String title) {
         super(message);
-        this.title = title;
+        this.title=title;
     }
 }

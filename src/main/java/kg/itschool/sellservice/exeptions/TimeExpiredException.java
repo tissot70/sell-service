@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class IncorrectData extends RuntimeException{
+public class TimeExpiredException extends RuntimeException{
     String title;
 
-    public IncorrectData(String message, String title) {
+    public TimeExpiredException(String message, String title) {
         super(message);
         this.title = title;
     }

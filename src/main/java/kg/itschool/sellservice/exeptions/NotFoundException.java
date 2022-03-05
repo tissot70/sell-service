@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TimeExpired extends RuntimeException{
+public class NotFoundException extends RuntimeException{
     String title;
 
-    public TimeExpired(String message, String title) {
+    public NotFoundException(String message, String title) {
         super(message);
         this.title = title;
     }
