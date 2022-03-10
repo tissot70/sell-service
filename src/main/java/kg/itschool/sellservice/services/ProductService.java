@@ -12,4 +12,8 @@ public interface ProductService {
     ResponseEntity<?> update(String token, ProductCreate productCreate);
 
     ProductResponse findByNameAndBarcode(String name, String barcode);
+
+    ResponseEntity<?> getActual(String token);
+
+    ProductResponse findByBarcode(String barcode);
 }

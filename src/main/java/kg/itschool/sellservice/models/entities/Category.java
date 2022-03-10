@@ -1,11 +1,12 @@
 package kg.itschool.sellservice.models.entities;
 
-import kg.itschool.sellservice.models.entities.base.BaseNameActive;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Getter
 @Setter
@@ -13,5 +14,10 @@ import javax.persistence.Table;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "categories")
-public class Category extends BaseNameActive {
+public class Category  {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+    String name;
+    boolean active;
 }

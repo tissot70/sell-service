@@ -77,7 +77,7 @@ public class ProductServiceImpl implements ProductService {
         if (Objects.nonNull(product)){
             throw new AlreadyExistsException("Ошибка","Такой продукт уже есть");
         }
-        int barcode = new Random().nextInt(999999) + 100000;
+        int barcode = (int) (Math.random()*(999999-100000+1)+100000);
         product = ProductMapper.INSTANCE.productCreateToProduct(productCreate);
         product.setBarcode(String.valueOf(barcode));
         productRepo.saveAndFlush(product);
@@ -88,5 +88,16 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse findByNameAndBarcode(String name, String barcode) {
         Product product = productRepo.findByNameAndBarcode(name,barcode);
         return ProductMapper.INSTANCE.productToProductResponse(product);
+    }
+
+    @Override
+    public ResponseEntity<?> getActual(String token) {
+        List<Object[]> products= productRepo.findAllActual();
+        return new ResponseEntity<>(products,HttpStatus.OK);
+    }
+
+    @Override
+    public ProductResponse findByBarcode(String barcode) {
+        return ProductMapper.INSTANCE.productToProductResponse(productRepo.findByBarcode(barcode));
     }
 }

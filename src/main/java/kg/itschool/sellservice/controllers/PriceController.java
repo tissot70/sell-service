@@ -18,4 +18,9 @@ public class PriceController {
     public ResponseEntity<?> save(@RequestHeader String token, @RequestBody PriceResponse priceResponse){
         return priceService.save(token,priceResponse);
     }
+
+    @GetMapping("/getActualPrice")
+    public ResponseEntity<?> get(@RequestHeader String token, @RequestParam long id){
+        return priceService.getActualPrice(token,id);
+    }
 }

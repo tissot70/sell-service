@@ -11,4 +11,5 @@ public interface CategoryService {
     ResponseEntity<?> getAll(String token );
 
     ResponseEntity<?> update(String token, CategoryResponse categoryResponse);
+
 }

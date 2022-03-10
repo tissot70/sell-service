@@ -1,21 +1,18 @@
-package kg.itschool.sellservice.models.dtos.discount;
+package kg.itschool.sellservice.models.dtos.operation;
 
 import kg.itschool.sellservice.models.dtos.product.ProductResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DiscountResponse {
+public class OperationDetailResponse {
     long id;
-    double discount;
-    boolean active;
-    LocalDateTime startDate;
-    LocalDateTime endDate;
+    int quantity;
+    double amount;
+    OperationResponse operation;
     ProductResponse product;
 }

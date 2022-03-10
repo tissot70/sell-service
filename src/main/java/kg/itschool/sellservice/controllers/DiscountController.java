@@ -19,5 +19,10 @@ public class DiscountController {
     public ResponseEntity<?> save(@RequestHeader String token, @RequestBody DiscountResponse discountResponse){
         return discountService.save(token,discountResponse);
     }
+
+    @GetMapping("/getActualDiscount")
+    public ResponseEntity<?> get (@RequestHeader String token, @RequestParam long id){
+        return discountService.getActualDiscount(token,id);
+    }
     
 }

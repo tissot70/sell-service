@@ -28,4 +28,9 @@ public class ProductController {
     public ResponseEntity<?> update(@RequestHeader String token, @RequestBody ProductCreate productCreate){
         return productService.update(token,productCreate);
     }
+
+    @GetMapping("/getAllActual")
+    public ResponseEntity<?> getActual(@RequestHeader String token){
+        return productService.getActual(token);
+    }
 }

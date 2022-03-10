@@ -1,7 +1,6 @@
 package kg.itschool.sellservice.services.impl;
 
 import kg.itschool.sellservice.dao.PriceRepo;
-import kg.itschool.sellservice.exeptions.IncorrectDataException;
 import kg.itschool.sellservice.exeptions.NotFoundException;
 import kg.itschool.sellservice.mappers.PriceMapper;
 import kg.itschool.sellservice.models.dtos.price.PriceResponse;
@@ -14,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.List;
 
 @Service
 public class PriceServiceImpl implements PriceService {
@@ -34,20 +33,39 @@ public class PriceServiceImpl implements PriceService {
         if (!responseEntity.getStatusCode().equals(HttpStatus.OK)){
             return responseEntity;
         }
-        ProductResponse productResponse = productService.findByNameAndBarcode(priceResponse.getProduct().getName(),priceResponse.getProduct().getBarcode());
+        ProductResponse productResponse = productService.findByNameAndBarcode(priceResponse.getProduct().getName()
+                                                                             ,priceResponse.getProduct().getBarcode());
         if (!productResponse.getName().equals(priceResponse.getProduct().getName()) &&
                 !productResponse.getBarcode().equals(priceResponse.getProduct().getBarcode())){
             throw new NotFoundException("Ошибка","продукт не найден");
         }
-        if (Objects.isNull(priceResponse.getStartDate())){
-            throw new IncorrectDataException("Ошибка","Вы не ввели дату в поле startDate");
-        }
-        if (Objects.isNull(priceResponse.getEndDate())){
-            throw new IncorrectDataException("Ошибка","Вы не ввели дату в поле endDate");
-        }
-
         Price price = PriceMapper.INSTANCE.priceResponseToPrice(priceResponse);
+        List<Price> priceList = priceRepo.findAllByActiveIsTrue(priceResponse.getProduct().getId());
+        for (Price s : priceList) {
+            if (s.getStartDate().compareTo(priceResponse.getStartDate()) <= 0) {
+                s.setActive(false);
+                priceRepo.saveAndFlush(s);
+            } else {
+                price.setActive(false);
+            }
+        }
         priceRepo.saveAndFlush(price);
         return new ResponseEntity<>("Успешно сохранено", HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<?> getActualPrice(String token, long id) {
+        ResponseEntity<?> responseEntity =codeService.verifyToken(token);
+        if (!responseEntity.getStatusCode().equals(HttpStatus.OK)){
+            return responseEntity;
+        }
+        Price price= priceRepo.findByActiveIsTrue(id);
+        return new ResponseEntity<>(price,HttpStatus.OK);
+    }
+
+    @Override
+    public double findPriceByProduct(ProductResponse productResponse) {
+        Price price=priceRepo.findByActiveIsTrue(productResponse.getId());
+        return price.getPrice();
     }
 }

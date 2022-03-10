@@ -1,6 +1,5 @@
 package kg.itschool.sellservice.models.entities;
 
-import kg.itschool.sellservice.models.entities.base.BaseNameActive;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,9 +12,14 @@ import javax.persistence.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "products")
-public class Product extends BaseNameActive {
+public class Product  {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+    String name;
+    boolean active;
     @ManyToOne
-    @JoinColumn(name = "categoties_id")
+    @JoinColumn(name = "categories_id")
     Category category;
     @Column(unique = true)
     String barcode;

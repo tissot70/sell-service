@@ -29,4 +29,5 @@ public class CategoryController {
     public ResponseEntity<?> update(@RequestHeader String token, @RequestBody CategoryResponse categoryResponse){
         return categoryService.update(token,categoryResponse);
     }
+
 }
