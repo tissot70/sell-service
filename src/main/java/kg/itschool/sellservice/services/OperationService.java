@@ -9,4 +9,6 @@ public interface OperationService {
     ResponseEntity<?> carryOutOperation(String token, List<OperationDTO> operationDTO);
 
     ResponseEntity<?> paying(String token, Long operationId, Double cash);
+
+    ResponseEntity<?> getPayingOfUser(String token, String login);
 }

@@ -12,4 +12,5 @@ public interface OperationDetailMapper {
     OperationDetailResponse operationDetailToOperationDetailResponse(OperationDetail operationDetail);
 
     OperationDetail operationDetailToOperationDetailResponse (OperationDetailResponse operationDetailResponse);
+
 }

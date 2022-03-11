@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Service
 public class OperationServiceImpl implements OperationService {
@@ -55,8 +56,6 @@ public class OperationServiceImpl implements OperationService {
         }
 
         ProductResponse productResponse;
-        OperationDetailResponse operationDetailResponse = new OperationDetailResponse();
-        CheckDTO checkDTO = new CheckDTO();
         Operation operation = new Operation();
 
         List<OperationDetailResponse> operationDetailResponseList = new ArrayList<>();
@@ -69,21 +68,22 @@ public class OperationServiceImpl implements OperationService {
             if (Objects.isNull(productResponse)) {
                 throw  new NotFoundException("Ошибка", "Проверьте введенный штрихкод: " + operationDTO.getBarcode());
             }
-            operationDetailResponse.setProduct(productResponse);
-            operationDetailResponse.setQuantity(operationDTO.getQuantity());
+            OperationDetailResponse operationDetailResponse = new OperationDetailResponse();
 
             double price= priceService.findPriceByProduct(productResponse);
             double discount=1-(discountService.findDiscountByProduct(productResponse))/100;
             double sum ;
             if (discountService.findDiscountByProduct(productResponse) == 0){
-                 sum= price * operationDTO.getQuantity();
+                sum= price * operationDTO.getQuantity();
             }else {
                 sum= (price*discount) * operationDTO.getQuantity();
             }
-             totalPrice+=sum;
+            totalPrice+=sum;
 
             CheckDetailDTO checkDetailDTO= new CheckDetailDTO();
 
+            operationDetailResponse.setProduct(productResponse);
+            operationDetailResponse.setQuantity(operationDTO.getQuantity());
             operationDetailResponse.setAmount(sum);
             operationDetailResponseList.add(operationDetailResponse);
 
@@ -100,6 +100,7 @@ public class OperationServiceImpl implements OperationService {
         Jws<Claims> jwt = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
         UserResponseDTO userResponseDTO= userService.findByLogin((String) jwt.getBody().get("login"));
 
+        CheckDTO checkDTO = new CheckDTO();
         checkDTO.setCashier(userResponseDTO.getName());
         checkDTO.setCheckDetailDTOS(checkDetailDTOList);
         checkDTO.setTotalPrice(totalPrice);
@@ -134,5 +135,30 @@ public class OperationServiceImpl implements OperationService {
         operationRepo.save(operation);
         OperationResponse operationResponse = OperationMapper.INSTANCE.operationToOperationResponse(operation);
         return new ResponseEntity<>(operationResponse,HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<?> getPayingOfUser(String token, String login) {
+        ResponseEntity<?> responseEntity = codeService.verifyToken(token);
+        if (!responseEntity.getStatusCode().equals(HttpStatus.OK)) {
+            return responseEntity;
+        }
+        String loginValidate="(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
+        if (!Pattern.matches(loginValidate,login)){
+            throw new IncorrectDataException("Ошибка","вы ввели некоректный email");
+        }
+        UserResponseDTO userResponseDTO =userService.findByLogin(login);
+        if (Objects.isNull(userResponseDTO)){
+            throw new NotFoundException("Ошибка","Такого пользователя нет");
+        }
+
+        List<Object[]> objects=operationRepo.find(userResponseDTO.getId());
+        UserOperation userOperation=new UserOperation();
+        userOperation.setLogin(userResponseDTO.getLogin());
+        userOperation.setName(userResponseDTO.getName());
+        userOperation.setSum(operationRepo.totalSum(userResponseDTO.getId()));
+        userOperation.setChange(operationRepo.totalChange(userResponseDTO.getId()));
+        userOperation.setProducts(objects);
+        return new ResponseEntity<>(userOperation,HttpStatus.OK);
     }
 }

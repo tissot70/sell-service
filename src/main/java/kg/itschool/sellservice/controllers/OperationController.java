@@ -26,5 +26,8 @@ public class OperationController {
         return operationService.paying(token,operationId,cash);
     }
 
-    //@GetMapping("/")
+    @GetMapping("/get")
+    public ResponseEntity<?> getPayingOfUser(@RequestHeader String token,@RequestParam String login){
+        return operationService.getPayingOfUser(token,login);
+    }
 }
